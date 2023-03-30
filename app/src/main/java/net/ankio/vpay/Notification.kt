@@ -105,6 +105,7 @@ class Notification : NotificationListenerService() {
                     val t: String = java.lang.String.valueOf(Date().time)
                     val jsonObject = JSONObject()
                     jsonObject.put("t", t)
+                    jsonObject.put("ver",BuildConfig.VERSION_NAME)
                     val sign = md5(jsonObject.toString() + key)
                     jsonObject.put("sign", sign)
 
@@ -178,7 +179,7 @@ class Notification : NotificationListenerService() {
                         var money = extractAmount(content)
                         if (money < 0) money = extractAmount(title)
                         Logger.d(TAG, "匹配成功： 支付宝 到账 $money", this)
-                        appPush(2, money)
+                        appPush(4, money)
                     }
 
                 }
@@ -187,7 +188,7 @@ class Notification : NotificationListenerService() {
                         var money = extractAmount(content)
                         if (money < 0) money = extractAmount(title)
                         Logger.d(TAG, "匹配成功： 微信到账 $money", this)
-                        appPush(1, money)
+                        appPush(3, money)
                     }
                 }
             }
