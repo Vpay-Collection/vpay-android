@@ -1,19 +1,28 @@
-package net.ankio.vpay
+package net.ankio.vpay.service
 
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
+import android.preference.PreferenceManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.text.TextUtils
+import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import com.google.gson.Gson
+import net.ankio.vpay.BuildConfig
+import net.ankio.vpay.utils.AnkioApi
 import net.ankio.vpay.utils.Logger
-import net.ankio.vpay.utils.SharedPreferencesUtils
+import net.ankio.vpay.utils.NAME
+import net.ankio.vpay.utils.SpUtils
+import net.ankio.vpay.utils.context
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -23,17 +32,30 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 
 
-class Notification : NotificationListenerService() {
+class NotificationService : NotificationListenerService() , SharedPreferences.OnSharedPreferenceChangeListener {
     private val TAG = "Notification"
     private var host: String? = null
     private var key: String? = null
     private var newThread: Thread? = null
     private var mWakeLock: WakeLock? = null
+    private lateinit var sharedPreferences: SharedPreferences
+
+    override fun onCreate() {
+        super.onCreate()
+
+
+    }
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        host = base?.let { SharedPreferencesUtils(it).getString("host") }
-        key = base?.let { SharedPreferencesUtils(it).getString("key") }
+        host = SpUtils.getString("host")
+        key = SpUtils.getString("key")
+        // 注册监听器
+        // 获取SharedPreferences实例
+        sharedPreferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+
+        // 注册监听器
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
 
 
@@ -88,24 +110,27 @@ class Notification : NotificationListenerService() {
     private fun initAppHeart() {
 
         if (newThread != null) {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
             return
         }
         acquireWakeLock(this)
 
         if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) {
             Logger.d(TAG, "请先配置监控地址和密钥！", this)
+            Toast.makeText(applicationContext,"请先配置监控地址和密钥！",Toast.LENGTH_LONG).show()
             return
         }
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
 
         newThread = Thread {
             Logger.d(TAG, "心跳线程启动！", this)
             try {
                 while (!Thread.currentThread().isInterrupted) {
                     //这里写入子线程需要做的工作
-                    val t: String = java.lang.String.valueOf(Date().time)
+                    val t: String = java.lang.String.valueOf(Date().time/1000)
                     val jsonObject = JSONObject()
                     jsonObject.put("t", t)
-                    jsonObject.put("ver",BuildConfig.VERSION_NAME)
+                    jsonObject.put("ver", BuildConfig.VERSION_NAME)
                     val sign = md5(jsonObject.toString() + key)
                     jsonObject.put("sign", sign)
 
@@ -127,8 +152,13 @@ class Notification : NotificationListenerService() {
                             }
 
                             override fun onResponse(call: Call, response: Response) {
+                                val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
+                                if(api.code == 200){
+                                    Logger.d(TAG, "心跳成功: ${api.msg}", that)
+                                }else{
+                                    Logger.d(TAG, "心跳异常: ${api.msg}", that)
+                                }
 
-                                Logger.d(TAG, "心跳成功: ${response.body?.string()}", that)
                             }
                         })
                     } catch (e: IllegalArgumentException) {
@@ -136,7 +166,7 @@ class Notification : NotificationListenerService() {
                         Logger.d(TAG, "配置错误: ${e.message}", that)
                     }
 
-                    Thread.sleep((30 * 1000).toLong())
+                    Thread.sleep((60 * 1000 * 10).toLong())
                 }
             } catch (_: InterruptedException) {
 
@@ -146,6 +176,7 @@ class Notification : NotificationListenerService() {
     }
 
     private fun shutdownHeart() {
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
         if (newThread == null) {
             return
         }
@@ -161,6 +192,15 @@ class Notification : NotificationListenerService() {
             val extras: Bundle = notification.extras
             val title = extras.getString(NotificationCompat.EXTRA_TITLE, "")
             val content = extras.getString(NotificationCompat.EXTRA_TEXT, "")
+            if(pkg!="com.eg.android.AlipayGphone" && pkg!="com.tencent.mm" && pkg!="com.tencent.mobileqq") {
+
+                Log.w(TAG, "**********通知到达************")
+                Log.w(TAG, "包名:$pkg")
+                Log.w(TAG, "标题:$title")
+                Log.w(TAG, "内容:$content")
+                Log.w(TAG, "**********通知结束************")
+                return
+            }
             Logger.d(TAG, "**********通知到达************", this)
             Logger.d(TAG, "包名:$pkg", this)
             Logger.d(TAG, "标题:$title", this)
@@ -179,18 +219,22 @@ class Notification : NotificationListenerService() {
                         var money = extractAmount(content)
                         if (money < 0) money = extractAmount(title)
                         Logger.d(TAG, "匹配成功： 支付宝 到账 $money", this)
-                        appPush(4, money)
+                        appPush(1, money)
                     }
 
                 }
                 "com.tencent.mm" -> if (content != null && content != "") {
                     if (title == "微信支付" || title == "微信收款助手" || title == "微信收款商业版") {
+                        if(content.contains("已支付"))return
                         var money = extractAmount(content)
                         if (money < 0) money = extractAmount(title)
                         Logger.d(TAG, "匹配成功： 微信到账 $money", this)
-                        appPush(3, money)
+                        appPush(2, money)
                     }
                 }
+
+                //TODO 补充QQ收款解析
+
             }
         }
     }
@@ -208,6 +252,7 @@ class Notification : NotificationListenerService() {
     override fun onListenerDisconnected() {
         releaseWakeLock()
         shutdownHeart()
+
         Logger.d(TAG, "监听服务关闭！", this)
     }
 
@@ -283,5 +328,15 @@ class Notification : NotificationListenerService() {
             e.printStackTrace()
         }
         return ""
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == "host"||key == "key") {
+            host = SpUtils.getString("host")
+            this.key = SpUtils.getString("key")
+            if(TextUtils.isEmpty(host) || TextUtils.isEmpty(key))return
+            shutdownHeart()
+            initAppHeart()
+        }
     }
 }

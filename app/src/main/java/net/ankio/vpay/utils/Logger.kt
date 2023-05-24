@@ -26,7 +26,7 @@ object Logger {
         val currentDate = dateFormat.format(Date())
         val currentTime = timeFormat.format(Date())
         val logFileName = "log_$currentDate.txt"
-        val logMessage = "[$currentTime] $message\n"
+        val logMessage = "[ $currentTime ] $message\n"
         val logFile = File(context.externalCacheDir, logFileName)
         try {
             val outputStream = FileOutputStream(logFile, true)

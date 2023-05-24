@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="net.ankio.vpay.ui.MainActivity"
+        android:label="MainActivity" />
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="net.ankio.vpay.ui.fragment.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/logFragment"
+        android:name="net.ankio.vpay.ui.fragment.LogFragment"
+        android:label="fragment_log"
+        tools:layout="@layout/fragment_log">
+    </fragment>
+    <fragment
+        android:id="@+id/netFragment"
+        android:name="net.ankio.vpay.ui.fragment.NetFragment"
+        android:label="fragment_net"
+        tools:layout="@layout/fragment_net">
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="net.ankio.vpay.ui.fragment.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting">
+
+    </fragment>
+
+</navigation>

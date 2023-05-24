@@ -1,46 +1,40 @@
 <resources>
     <string name="app_name">微支付</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="lorem_ipsum">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
-        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
-        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
-        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
-        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
-        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
-        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
-        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
-        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
-        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
-        bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
-        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
-        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
-        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
-        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
-        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
-        est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
-        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
-        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
-        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
-        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
-        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
-        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
-        convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
-        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
-        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
-        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
-        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
-        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
-        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
-    </string>
+    <string name="title_home">主页</string>
+    <string name="title_log">日志</string>
+    <string name="title_net">后台</string>
+    <string name="title_setting">设置</string>
+    <string name="nav_about">关于</string>
+    <string name="active_error">服务未运行</string>
+    <string name="scan">扫码绑定</string>
+    <string name="setting">参数配置</string>
+    <string name="mac_data">Vpay网址</string>
+    <string name="url">Vpay网址：</string>
+    <string name="key">通讯密钥：</string>
+    <string name="listen">监听以下App</string>
+    <string name="nav_setting">设置</string>
+    <string name="choose_theme">选择一个主题</string>
+    <string name="about_view_source_code"><![CDATA[在 %s 查看源码]]></string>
+    <string name="setting_use_system_theme">使用系统颜色</string>
+    <string name="setting_use_dark_theme">深色模式使用纯黑色</string>
+    <string name="setting_skin">外观</string>
+    <string name="setting_theme">主题</string>
+    <string name="setting_dark_theme_off">总是关闭</string>
+    <string name="setting_dark_theme">深色主题</string>
+    <string name="setting_network">网络</string>
+    <string name="lang_follow_system">跟随系统</string>
+    <string name="setting_privacy">隐私</string>
+    <string name="setting_analysis">匿名分析</string>
+    <string name="setting_analysis_desc">我们使用Flurry来收集崩溃信息</string>
+    <string name="ok">好的</string>
+    <string name="dialog_cannot_open_browser_title">无法打开浏览器</string>
+    <string name="toast_copied_to_clipboard_with_text"><![CDATA[<b>%s</b> 已复制到剪切板。]]></string>
+    <string name="close">关闭</string>
+    <string name="default_theme">默认主题</string>
+    <string name="always_off">总是关闭</string>
+    <string name="always_on">总是开启</string>
+    <string name="server_error">服务未启动</string>
+    <string name="server_working">服务已启动</string>
+    <string name="hide_icon">从桌面启动器隐藏应用图标</string>
+    <string name="not_work">服务未运行.</string>
 </resources>
