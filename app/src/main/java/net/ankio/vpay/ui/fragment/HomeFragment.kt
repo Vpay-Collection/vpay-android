@@ -35,6 +35,9 @@ import net.ankio.vpay.utils.Logger
 import net.ankio.vpay.utils.SpUtils
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class HomeFragment : Fragment() {
@@ -103,7 +106,7 @@ class HomeFragment : Fragment() {
     /**
      * 获取主题色
      */
-    fun getThemeAttrColor( @AttrRes attrResId: Int): Int {
+    private fun getThemeAttrColor( @AttrRes attrResId: Int): Int {
         return MaterialColors.getColor(ContextThemeWrapper(requireContext(), ThemeEngine.getInstance(requireContext()).getTheme()), attrResId, Color.WHITE)
     }
     /**
@@ -121,6 +124,18 @@ class HomeFragment : Fragment() {
         binding.imageView.setColorFilter(getThemeAttrColor(textColor))
         binding.msgLabel.setTextColor(getThemeAttrColor(textColor))
     }
+    private fun setActive2(text: String, @AttrRes backgroundColor:Int, @AttrRes textColor:Int, @DrawableRes drawable:Int){
+        binding.active2.setBackgroundColor(getThemeAttrColor(backgroundColor))
+        binding.imageView2.setImageDrawable(
+            AppCompatResources.getDrawable(
+                requireActivity(),
+                drawable
+            )
+        )
+        binding.msgLabel2.text = text
+        binding.imageView2.setColorFilter(getThemeAttrColor(textColor))
+        binding.msgLabel2.setTextColor(getThemeAttrColor(textColor))
+    }
     private fun isMyNotificationListenerServiceRunning(context: Context): Boolean {
         val enabledListeners = Settings.Secure.getString(
             context.contentResolver,
@@ -129,11 +144,25 @@ class HomeFragment : Fragment() {
         return enabledListeners?.contains(context.packageName) == true
     }
 
+    fun convertTimestampToDateTime(timestamp: Long): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val date = Date(timestamp)
+        return dateFormat.format(date)
+    }
+
     private fun refreshStatus(){
         if(!isMyNotificationListenerServiceRunning(requireContext())){//判断服务是否运行
             setActive(R.string.not_work,com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
         }else{
             setActive(R.string.server_working,com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
+        }
+
+        val time = SpUtils.getLong("time_heart",0)
+        val reason = SpUtils.getString("reason","尚未配置数据")
+        if(SpUtils.getInt("heart",0)==0){
+            setActive2(getString(R.string.heart_not_work,reason,convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
+        }else{
+            setActive2(getString(R.string.heart_work,convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
         }
     }
     private fun restartNotification() {

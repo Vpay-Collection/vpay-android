@@ -116,6 +116,8 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
         acquireWakeLock(this)
 
         if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) {
+            SpUtils.putInt("time",0)
+            SpUtils.putString("reason","尚未配置数据")
             Logger.d(TAG, "请先配置监控地址和密钥！", this)
             Toast.makeText(applicationContext,"请先配置监控地址和密钥！",Toast.LENGTH_LONG).show()
             return
@@ -148,14 +150,19 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
                         okHttpClient.newCall(request).enqueue(object : Callback {
                             override fun onFailure(call: Call, e: IOException) {
                                 Logger.d(TAG, "心跳失败: ${e.message}", that)
-
+                                SpUtils.putInt("heart",0)
+                                e.message?.let { SpUtils.putString("reason", it) }
                             }
 
                             override fun onResponse(call: Call, response: Response) {
                                 val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
                                 if(api.code == 200){
+                                    SpUtils.putInt("heart",1)
+                                    SpUtils.putLong("time_heart",System.currentTimeMillis())
                                     Logger.d(TAG, "心跳成功: ${api.msg}", that)
                                 }else{
+                                    SpUtils.putInt("heart",0)
+                                    SpUtils.putString("reason",api.msg)
                                     Logger.d(TAG, "心跳异常: ${api.msg}", that)
                                 }
 
@@ -163,6 +170,8 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
                         })
                     } catch (e: IllegalArgumentException) {
                         Thread.currentThread().interrupt()
+                        SpUtils.putInt("heart",0)
+                        e.message?.let { SpUtils.putString("reason", it) }
                         Logger.d(TAG, "配置错误: ${e.message}", that)
                     }
 

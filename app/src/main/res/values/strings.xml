@@ -33,9 +33,12 @@
     <string name="default_theme">默认主题</string>
     <string name="always_off">总是关闭</string>
     <string name="always_on">总是开启</string>
-    <string name="server_error">服务未启动</string>
-    <string name="server_working">服务已启动</string>
+    <string name="server_error">通知监听服务未启动</string>
+    <string name="server_working">通知监听服务已启动</string>
     <string name="hide_icon">从桌面启动器隐藏应用图标</string>
     <string name="not_work">服务未运行.</string>
     <string name="title_pay">记录</string>
+    <string name="heart_error">心跳异常</string>
+    <string name="heart_not_work">心跳异常：%s\n最后心跳：%s</string>
+    <string name="heart_work">心跳正常\n最后心跳：%s</string>
 </resources>

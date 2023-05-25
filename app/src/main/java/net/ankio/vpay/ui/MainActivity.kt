@@ -52,7 +52,7 @@ class MainActivity : BaseActivity() {
         NavigationUI.setupWithNavController(bottomNavigationView, navHostFragment.navController)
 
         // 添加 Navigate 跳转监听，如果参数不带 ShowAppBar 将不显示底部导航栏
-        navHostFragment.navController.addOnDestinationChangedListener { navController, navDestination, bundle ->
+        navHostFragment.navController.addOnDestinationChangedListener { _, navDestination, _ ->
             when (navDestination.id) {
                 R.id.homeFragment -> {
                   toolbar.title = getString(R.string.title_home)
@@ -65,6 +65,10 @@ class MainActivity : BaseActivity() {
                 }
                 R.id.netFragment -> {
                     toolbar.title = getString(R.string.title_net)
+                }
+
+                R.id.payFragment->{
+                    toolbar.title = getString(R.string.title_pay)
                 }
 
             }
