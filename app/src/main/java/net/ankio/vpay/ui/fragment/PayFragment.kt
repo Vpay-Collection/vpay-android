@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import net.ankio.vpay.databinding.FragmentPayBinding
 import net.ankio.vpay.ui.MyAdapter
 import net.ankio.vpay.utils.PayUtils
+import java.util.Collections
 
 
 class PayFragment: Fragment()  {
@@ -22,8 +23,9 @@ class PayFragment: Fragment()  {
     ): View {
         binding = FragmentPayBinding.inflate(layoutInflater)
 
-
-        binding.recyclerView.adapter = MyAdapter(PayUtils.list())
+        val list  = PayUtils.list()
+        list.reverse()
+        binding.recyclerView.adapter = MyAdapter(list)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         return binding.root
     }

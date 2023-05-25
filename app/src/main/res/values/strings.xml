@@ -39,6 +39,6 @@
     <string name="not_work">服务未运行.</string>
     <string name="title_pay">记录</string>
     <string name="heart_error">心跳异常</string>
-    <string name="heart_not_work">心跳异常：%s\n最后心跳：%s</string>
-    <string name="heart_work">心跳正常\n最后心跳：%s</string>
+    <string name="heart_not_work">心跳异常：%s\n%s</string>
+    <string name="heart_work">心跳正常\n%s</string>
 </resources>
