@@ -6,6 +6,11 @@
         android:enabled="true"
         android:title="@string/title_home" />
     <item
+        android:id="@+id/payFragment"
+        android:icon="@drawable/ic_pay"
+        android:enabled="true"
+        android:title="@string/title_pay" />
+    <item
         android:id="@+id/logFragment"
         android:icon="@drawable/ic_log"
         android:enabled="true"

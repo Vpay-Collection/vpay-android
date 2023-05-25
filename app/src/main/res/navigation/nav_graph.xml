@@ -19,6 +19,14 @@
     </fragment>
 
     <fragment
+        android:id="@+id/payFragment"
+        android:name="net.ankio.vpay.ui.fragment.PayFragment"
+        android:label="fragment_pay"
+        tools:layout="@layout/fragment_pay">
+
+    </fragment>
+
+    <fragment
         android:id="@+id/logFragment"
         android:name="net.ankio.vpay.ui.fragment.LogFragment"
         android:label="fragment_log"
