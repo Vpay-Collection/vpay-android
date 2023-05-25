@@ -1,12 +1,10 @@
 package net.ankio.vpay.ui.fragment
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -15,10 +13,8 @@ import android.webkit.WebViewClient
 import android.widget.ScrollView
 import androidx.fragment.app.Fragment
 import net.ankio.vpay.R
-import net.ankio.vpay.databinding.ActivityMainBinding
 import net.ankio.vpay.databinding.FragmentNetBinding
 import net.ankio.vpay.utils.Logger
-import net.ankio.vpay.utils.Md5Utils
 import net.ankio.vpay.utils.SpUtils
 
 class NetFragment:Fragment() {

@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken
 
 
 object PayUtils {
-    fun add(time: String, type: Int, money: Float){
+    fun add(time: String, type: Int, money: Double){
         this.removedLast100()
         val list = list()
         val item = PayInfo(time,type,money)

@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
-import android.preference.PreferenceManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.text.TextUtils
@@ -21,14 +20,13 @@ import net.ankio.vpay.BuildConfig
 import net.ankio.vpay.utils.AnkioApi
 import net.ankio.vpay.utils.Logger
 import net.ankio.vpay.utils.NAME
+import net.ankio.vpay.utils.PayUtils
+import net.ankio.vpay.utils.PushUtils
 import net.ankio.vpay.utils.SpUtils
 import net.ankio.vpay.utils.context
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
-import java.net.URLEncoder
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.util.*
 
 
@@ -82,25 +80,7 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
         }
     }
 
-    private fun jsonObjectToUrlParams(jsonObject: JSONObject): String {
-        val params = StringBuilder()
-        val keys = jsonObject.keys()
 
-        while (keys.hasNext()) {
-            val key = keys.next()
-            val value = jsonObject.get(key).toString()
-
-            if (params.isNotEmpty()) {
-                params.append("&")
-            }
-
-            params.append(key)
-                .append("=")
-                .append(URLEncoder.encode(value, "UTF-8"))
-        }
-
-        return params.toString()
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
@@ -133,13 +113,13 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
                     val jsonObject = JSONObject()
                     jsonObject.put("t", t)
                     jsonObject.put("ver", BuildConfig.VERSION_NAME)
-                    val sign = md5(jsonObject.toString() + key)
+                    val sign = PushUtils.md5(jsonObject.toString() + key)
                     jsonObject.put("sign", sign)
 
                     val  that = this
                     try {
                         val okHttpClient = OkHttpClient()
-                        val url = "$host/api/app/heart?" + jsonObjectToUrlParams(jsonObject)
+                        val url = "$host/api/app/heart?" + PushUtils.jsonObjectToUrlParams(jsonObject)
                         val request: Request =
                             Request.Builder()
                                 .url(url)
@@ -225,20 +205,21 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
                         || content.contains("成功收款")
                         || title.contains("你已成功收款")
                     ) {
-                        var money = extractAmount(content)
-                        if (money < 0) money = extractAmount(title)
+                        var money = PushUtils.extractAmount(content)
+                        if (money < 0) money = PushUtils.extractAmount(title)
                         Logger.d(TAG, "匹配成功： 支付宝 到账 $money", this)
-                        appPush(1, money)
+                        PushUtils.appPush(1, money,this)
+                        PayUtils.add(PushUtils.convertTimestampToDateTime(System.currentTimeMillis()),1,money)
                     }
-
                 }
                 "com.tencent.mm" -> if (content != null && content != "") {
                     if (title == "微信支付" || title == "微信收款助手" || title == "微信收款商业版") {
                         if(content.contains("已支付"))return
-                        var money = extractAmount(content)
-                        if (money < 0) money = extractAmount(title)
+                        var money = PushUtils.extractAmount(content)
+                        if (money < 0) money = PushUtils.extractAmount(title)
                         Logger.d(TAG, "匹配成功： 微信到账 $money", this)
-                        appPush(2, money)
+                        PushUtils.appPush(2, money,this)
+                        PayUtils.add(PushUtils.convertTimestampToDateTime(System.currentTimeMillis()),2,money)
                     }
                 }
 
@@ -264,79 +245,8 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
         Logger.d(TAG, "监听服务关闭！", this)
     }
 
-    private fun appPush(type: Int, price: Double) {
-        if (price < 0) {
-            Logger.d(TAG, "金额小于0，不推送！", this)
-            return
-        }
 
-        if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) return
-
-        Logger.d(TAG, "推送数据: 类型： $type 金额：$price", this)
-
-
-        val jsonObject = JSONObject()
-        jsonObject.put("t", java.lang.String.valueOf(Date().time))
-        jsonObject.put("type", type)
-        jsonObject.put("price", price)
-        jsonObject.put("sign", md5(jsonObject.toString() + key))
-
-        try {
-            val that = this
-            val url = "$host/api/app/push?" + jsonObjectToUrlParams(jsonObject)
-            Logger.d(TAG, "推送数据地址：$url", this)
-            val okHttpClient = OkHttpClient()
-            val request: Request =
-                Request.Builder().url(url).method("GET", null).build()
-
-            okHttpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    Logger.d(TAG, "推送失败: ${e.message}", that)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    Logger.d(TAG, "推送成功: ${response.body?.string()}", that)
-                }
-            })
-        } catch (e: IllegalArgumentException) {
-            Logger.d(TAG, "网站响应异常", this)
-        }
-
-    }
     //解析金额信息
-    private fun extractAmount(input: String): Double {
-        val regex = Regex("[0-9]+(,[0-9]{3})*(\\.[0-9]{2})?")
-        val matchResult = regex.find(input)
-        if (matchResult != null) {
-            val amountString = matchResult.value.replace(",", "")
-            return amountString.toDouble()
-        }
-        return 0.0
-    }
-
-
-    private fun md5(string: String): String {
-        if (TextUtils.isEmpty(string)) {
-            return ""
-        }
-        val md5: MessageDigest?
-        try {
-            md5 = MessageDigest.getInstance("MD5")
-            val bytes: ByteArray = md5.digest(string.toByteArray())
-            var result = ""
-            for (b in bytes) {
-                var temp = Integer.toHexString(b.toInt() and 0xff)
-                if (temp.length == 1) {
-                    temp = "0$temp"
-                }
-                result += temp
-            }
-            return result
-        } catch (e: NoSuchAlgorithmException) {
-            e.printStackTrace()
-        }
-        return ""
-    }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == "host"||key == "key") {

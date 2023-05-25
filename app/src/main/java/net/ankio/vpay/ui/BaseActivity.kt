@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.elevation.SurfaceColors
 import com.quickersilver.themeengine.ThemeEngine
 import com.quickersilver.themeengine.ThemeMode
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
@@ -63,7 +64,7 @@ open class BaseActivity : AppCompatActivity() {
             val theme = ThemeEngine.getInstance(this@BaseActivity).getTheme()
             val mStatusBarColor = getThemeAttrColor(this,theme,android.R.attr.colorBackground)
             var last = mStatusBarColor
-            val mStatusBarColor2 =  getThemeAttrColor(this,theme,com.google.android.material.R.attr.colorSurfaceVariant)
+            val mStatusBarColor2 =  SurfaceColors.SURFACE_4.getColor(this)
             var animatorStart = false
             //滚动页面调整toolbar颜色
             scrollView.setOnScrollChangeListener { view, _, scrollY, _, oldScrollY ->

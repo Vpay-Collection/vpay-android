@@ -32,6 +32,7 @@ import net.ankio.vpay.R
 import net.ankio.vpay.databinding.FragmentHomeBinding
 import net.ankio.vpay.service.NotificationService
 import net.ankio.vpay.utils.Logger
+import net.ankio.vpay.utils.PushUtils
 import net.ankio.vpay.utils.SpUtils
 import org.json.JSONException
 import org.json.JSONObject
@@ -144,11 +145,6 @@ class HomeFragment : Fragment() {
         return enabledListeners?.contains(context.packageName) == true
     }
 
-    fun convertTimestampToDateTime(timestamp: Long): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val date = Date(timestamp)
-        return dateFormat.format(date)
-    }
 
     private fun refreshStatus(){
         if(!isMyNotificationListenerServiceRunning(requireContext())){//判断服务是否运行
@@ -160,9 +156,9 @@ class HomeFragment : Fragment() {
         val time = SpUtils.getLong("time_heart",0)
         val reason = SpUtils.getString("reason","尚未配置数据")
         if(SpUtils.getInt("heart",0)==0){
-            setActive2(getString(R.string.heart_not_work,reason,convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
+            setActive2(getString(R.string.heart_not_work,reason,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
         }else{
-            setActive2(getString(R.string.heart_work,convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
+            setActive2(getString(R.string.heart_work,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
         }
     }
     private fun restartNotification() {
