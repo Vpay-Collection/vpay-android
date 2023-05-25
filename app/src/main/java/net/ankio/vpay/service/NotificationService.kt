@@ -192,7 +192,7 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
             val extras: Bundle = notification.extras
             val title = extras.getString(NotificationCompat.EXTRA_TITLE, "")
             val content = extras.getString(NotificationCompat.EXTRA_TEXT, "")
-            if(pkg!="com.eg.android.AlipayGphone" && pkg!="com.tencent.mm" && pkg!="com.tencent.mobileqq") {
+            if(pkg!="com.eg.android.AlipayGphone" && pkg!="com.tencent.mm") {
 
                 Log.w(TAG, "**********通知到达************")
                 Log.w(TAG, "包名:$pkg")
@@ -233,7 +233,6 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
                     }
                 }
 
-                //TODO 补充QQ收款解析
 
             }
         }
@@ -275,7 +274,7 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
 
         try {
             val that = this
-            val url = "$host/api/app/push" + jsonObjectToUrlParams(jsonObject)
+            val url = "$host/api/app/push?" + jsonObjectToUrlParams(jsonObject)
             Logger.d(TAG, "推送数据地址：$url", this)
             val okHttpClient = OkHttpClient()
             val request: Request =
