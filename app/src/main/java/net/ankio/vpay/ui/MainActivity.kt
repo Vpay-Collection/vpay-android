@@ -107,8 +107,9 @@ class MainActivity : BaseActivity() {
 
 
     override fun onDestroy() {
-        super.onDestroy()
         Logger.d(tag, "--------- ending of session", this)
+        super.onDestroy()
+
     }
 
     private fun isNotificationListenersEnabled(): Boolean {

@@ -98,7 +98,7 @@ class HomeFragment : Fragment() {
         }
         binding.url.setText(SpUtils.getString("host"))
         binding.key.setText(SpUtils.getString("key"))
-        restartNotification()
+        //restartNotification()
         refreshStatus()
     }
 
@@ -147,7 +147,8 @@ class HomeFragment : Fragment() {
     private fun refreshStatus(){
         val time = SpUtils.getLong("time_heart",0)
         val reason = SpUtils.getString("reason","尚未配置数据")
-        if(SpUtils.getInt("heart",0)==0 && isMyNotificationListenerServiceRunning(requireContext()) ){
+        if(!isMyNotificationListenerServiceRunning(requireContext())) restartNotification()
+        if(SpUtils.getInt("heart",0)==0 || !isMyNotificationListenerServiceRunning(requireContext()) ){
             setActive2(getString(R.string.heart_not_work,reason,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
         }else{
             setActive2(getString(R.string.heart_work,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
