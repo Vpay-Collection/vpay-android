@@ -38,8 +38,8 @@ object PushUtils {
 
         val jsonObject = JSONObject()
         jsonObject.put("t", java.lang.String.valueOf(Date().time/1000))
-        jsonObject.put("type", type)
-        jsonObject.put("price", price)
+        jsonObject.put("type", java.lang.String.valueOf(type))
+        jsonObject.put("price", java.lang.String.valueOf(price))
         jsonObject.put("sign", md5(jsonObject.toString() + key))
 
         try {
