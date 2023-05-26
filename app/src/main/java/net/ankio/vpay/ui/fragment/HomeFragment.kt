@@ -28,6 +28,10 @@ import com.google.android.material.color.MaterialColors
 import com.king.zxing.CameraScan
 import com.king.zxing.CaptureActivity
 import com.quickersilver.themeengine.ThemeEngine
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.ankio.vpay.R
 import net.ankio.vpay.databinding.FragmentHomeBinding
 import net.ankio.vpay.service.NotificationService
@@ -53,6 +57,7 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         resultLauncher =
@@ -67,8 +72,12 @@ class HomeFragment : Fragment() {
                         SpUtils.putString("host", jsonObject.getString("url"))
                         SpUtils.putString("key", jsonObject.getString("key"))
                         Logger.d("Main", "配置成功，重启监听服务...", requireContext())
-                        showMsg("配置成功，重启监听服务...");
-                        viewInit()
+                        showMsg("配置成功，尝试心跳中...")
+                        GlobalScope.launch {
+                            delay(2000) // 延时一秒钟
+                            refreshStatus()
+                        }
+
                     } catch (e: JSONException) {
                         Logger.d(
                             "Main",
@@ -87,7 +96,10 @@ class HomeFragment : Fragment() {
             startScan(CaptureActivity::class.java, "请扫描后台二维码绑定")
 
         }
-        viewInit()
+        binding.url.setText(SpUtils.getString("host"))
+        binding.key.setText(SpUtils.getString("key"))
+        restartNotification()
+        refreshStatus()
     }
 
     val KEY_TITLE = "key_title"
@@ -110,21 +122,7 @@ class HomeFragment : Fragment() {
     private fun getThemeAttrColor( @AttrRes attrResId: Int): Int {
         return MaterialColors.getColor(ContextThemeWrapper(requireContext(), ThemeEngine.getInstance(requireContext()).getTheme()), attrResId, Color.WHITE)
     }
-    /**
-     * 设置插件状态
-     */
-    private fun setActive(@StringRes text: Int, @AttrRes backgroundColor:Int, @AttrRes textColor:Int, @DrawableRes drawable:Int){
-        binding.active.setBackgroundColor(getThemeAttrColor(backgroundColor))
-        binding.imageView.setImageDrawable(
-            AppCompatResources.getDrawable(
-                requireActivity(),
-                drawable
-            )
-        )
-        binding.msgLabel.text = getString(text)
-        binding.imageView.setColorFilter(getThemeAttrColor(textColor))
-        binding.msgLabel.setTextColor(getThemeAttrColor(textColor))
-    }
+
     private fun setActive2(text: String, @AttrRes backgroundColor:Int, @AttrRes textColor:Int, @DrawableRes drawable:Int){
         binding.active2.setBackgroundColor(getThemeAttrColor(backgroundColor))
         binding.imageView2.setImageDrawable(
@@ -147,15 +145,9 @@ class HomeFragment : Fragment() {
 
 
     private fun refreshStatus(){
-        if(!isMyNotificationListenerServiceRunning(requireContext())){//判断服务是否运行
-            setActive(R.string.not_work,com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
-        }else{
-            setActive(R.string.server_working,com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
-        }
-
         val time = SpUtils.getLong("time_heart",0)
         val reason = SpUtils.getString("reason","尚未配置数据")
-        if(SpUtils.getInt("heart",0)==0){
+        if(SpUtils.getInt("heart",0)==0 && isMyNotificationListenerServiceRunning(requireContext()) ){
             setActive2(getString(R.string.heart_not_work,reason,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
         }else{
             setActive2(getString(R.string.heart_work,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
@@ -179,18 +171,12 @@ class HomeFragment : Fragment() {
     }
 
 
-    fun viewInit() {
-        binding.url.setText(SpUtils.getString("host"))
-        binding.key.setText(SpUtils.getString("key"))
-        restartNotification()
-        refreshStatus()
-    }
 
 
     /**
      * 显示信息
      */
-    fun showMsg(msg:String) {
+    private fun showMsg(msg:String) {
         Toast.makeText(requireActivity(), msg, Toast.LENGTH_LONG).show()
     }
 }

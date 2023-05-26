@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Looper
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
 import android.service.notification.NotificationListenerService
@@ -30,31 +31,17 @@ import java.io.IOException
 import java.util.*
 
 
-class NotificationService : NotificationListenerService() , SharedPreferences.OnSharedPreferenceChangeListener {
+class NotificationService : NotificationListenerService()  {
     private val TAG = "Notification"
     private var host: String? = null
     private var key: String? = null
     private var newThread: Thread? = null
     private var mWakeLock: WakeLock? = null
-    private lateinit var sharedPreferences: SharedPreferences
-
-    override fun onCreate() {
-        super.onCreate()
-
-
-    }
-
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        host = SpUtils.getString("host")
-        key = SpUtils.getString("key")
-        // 注册监听器
-        // 获取SharedPreferences实例
-        sharedPreferences = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
-        // 注册监听器
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
+
 
 
     //申请设备电源锁
@@ -90,86 +77,85 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
     private fun initAppHeart() {
 
         if (newThread != null) {
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
             return
         }
         acquireWakeLock(this)
-
-        if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) {
-            SpUtils.putInt("time",0)
-            SpUtils.putString("reason","尚未配置数据")
-            Logger.d(TAG, "请先配置监控地址和密钥！", this)
-            Toast.makeText(applicationContext,"请先配置监控地址和密钥！",Toast.LENGTH_LONG).show()
-            return
-        }
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
 
         newThread = Thread {
             Logger.d(TAG, "心跳线程启动！", this)
             try {
                 while (!Thread.currentThread().isInterrupted) {
-                    //这里写入子线程需要做的工作
-                    val t: String = java.lang.String.valueOf(Date().time/1000)
-                    val jsonObject = JSONObject()
-                    jsonObject.put("t", t)
-                    jsonObject.put("ver", BuildConfig.VERSION_NAME)
-                    val sign = PushUtils.md5(jsonObject.toString() + key)
-                    jsonObject.put("sign", sign)
+                    var time  = 60 * 1000 *10;
+                    host = SpUtils.getString("host")
+                    key = SpUtils.getString("key")
+                    if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) {
+                        SpUtils.putInt("heart",0)
+                        SpUtils.putString("reason","尚未配置数据")
+                        Logger.d(TAG, "请先配置监控地址和密钥！", this)
+                        Looper.prepare()
+                        Toast.makeText(applicationContext,"请先配置监控地址和密钥！",Toast.LENGTH_LONG).show()
+                        Looper.loop()
+                        time = 1000
+                    }else{
+                        val t: String = java.lang.String.valueOf(Date().time/1000)
+                        val jsonObject = JSONObject()
+                        jsonObject.put("t", t)
+                        jsonObject.put("ver", BuildConfig.VERSION_NAME)
+                        val sign = PushUtils.md5(jsonObject.toString() + key)
+                        jsonObject.put("sign", sign)
 
-                    val  that = this
-                    try {
-                        val okHttpClient = OkHttpClient()
-                        val url = "$host/api/app/heart?" + PushUtils.jsonObjectToUrlParams(jsonObject)
-                        val request: Request =
-                            Request.Builder()
-                                .url(url)
-                                .method("GET", null)
-                                .build()
-                        Logger.d(TAG, "心跳地址：${url}", this)
+                        val  that = this
+                        try {
+                            val okHttpClient = OkHttpClient()
+                            val url = "$host/api/app/heart?" + PushUtils.jsonObjectToUrlParams(jsonObject)
+                            val request: Request =
+                                Request.Builder()
+                                    .url(url)
+                                    .method("GET", null)
+                                    .build()
+                            Logger.d(TAG, "心跳地址：${url}", this)
 
-                        okHttpClient.newCall(request).enqueue(object : Callback {
-                            override fun onFailure(call: Call, e: IOException) {
-                                Logger.d(TAG, "心跳失败: ${e.message}", that)
-                                SpUtils.putInt("heart",0)
-                                e.message?.let { SpUtils.putString("reason", it) }
-                            }
-
-                            override fun onResponse(call: Call, response: Response) {
-                                val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
-                                if(api.code == 200){
-                                    SpUtils.putInt("heart",1)
-                                    SpUtils.putLong("time_heart",System.currentTimeMillis())
-                                    Logger.d(TAG, "心跳成功: ${api.msg}", that)
-                                }else{
+                            okHttpClient.newCall(request).enqueue(object : Callback {
+                                override fun onFailure(call: Call, e: IOException) {
+                                    Logger.d(TAG, "心跳失败: ${e.message}", that)
                                     SpUtils.putInt("heart",0)
-                                    SpUtils.putString("reason",api.msg)
-                                    Logger.d(TAG, "心跳异常: ${api.msg}", that)
+                                    e.message?.let { SpUtils.putString("reason", it) }
                                 }
 
-                            }
-                        })
-                    } catch (e: IllegalArgumentException) {
-                        Thread.currentThread().interrupt()
-                        SpUtils.putInt("heart",0)
-                        e.message?.let { SpUtils.putString("reason", it) }
-                        Logger.d(TAG, "配置错误: ${e.message}", that)
+                                override fun onResponse(call: Call, response: Response) {
+                                    val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
+                                    if(api.code == 200){
+                                        SpUtils.putInt("heart",1)
+                                        SpUtils.putLong("time_heart",System.currentTimeMillis())
+                                        Logger.d(TAG, "心跳成功: ${api.msg}", that)
+                                    }else{
+                                        SpUtils.putInt("heart",0)
+                                        SpUtils.putString("reason",api.msg)
+                                        Logger.d(TAG, "心跳异常: ${api.msg}", that)
+                                    }
+
+                                }
+                            })
+                        } catch (e: IllegalArgumentException) {
+                            Thread.currentThread().interrupt()
+                            SpUtils.putInt("heart",0)
+                            e.message?.let { SpUtils.putString("reason", it) }
+                            Logger.d(TAG, "配置错误: ${e.message}", that)
+                        }
                     }
-
-                    Thread.sleep((60 * 1000 * 10).toLong())
+                    Thread.sleep(time.toLong())
                 }
-            } catch (_: InterruptedException) {
-
-            }
+            } catch (_: InterruptedException) { }
         }
         newThread!!.start() //启动线程
     }
 
     private fun shutdownHeart() {
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
         if (newThread == null) {
             return
         }
         newThread!!.interrupt();
+        newThread = null
 
     }
 
@@ -182,7 +168,6 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
             val title = extras.getString(NotificationCompat.EXTRA_TITLE, "")
             val content = extras.getString(NotificationCompat.EXTRA_TEXT, "")
             if(pkg!="com.eg.android.AlipayGphone" && pkg!="com.tencent.mm") {
-
                 Log.w(TAG, "**********通知到达************")
                 Log.w(TAG, "包名:$pkg")
                 Log.w(TAG, "标题:$title")
@@ -195,9 +180,6 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
             Logger.d(TAG, "标题:$title", this)
             Logger.d(TAG, "内容:$content", this)
             Logger.d(TAG, "**********通知结束************", this)
-            val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.cancel(sbn.id) // 使用通知的ID移除单个通知
             when (pkg) {
                 "com.eg.android.AlipayGphone" -> if (content != null && content != "") {
                     if (
@@ -233,7 +215,6 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
 
     //当连接成功时调用，一般在开启监听后会回调一次该方法
     override fun onListenerConnected() {
-        //开启心跳线程
         initAppHeart()
         Logger.d(TAG, "监听服务开启！", this)
     }
@@ -241,20 +222,8 @@ class NotificationService : NotificationListenerService() , SharedPreferences.On
     override fun onListenerDisconnected() {
         releaseWakeLock()
         shutdownHeart()
-
         Logger.d(TAG, "监听服务关闭！", this)
     }
-
-
     //解析金额信息
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (key == "host"||key == "key") {
-            host = SpUtils.getString("host")
-            this.key = SpUtils.getString("key")
-            if(TextUtils.isEmpty(host) || TextUtils.isEmpty(key))return
-            shutdownHeart()
-            initAppHeart()
-        }
-    }
 }
