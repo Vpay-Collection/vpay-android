@@ -117,8 +117,8 @@ class SettingFragment:Fragment() {
         binding.systemColor.isChecked = ThemeEngine.getInstance(requireContext()).isDynamicTheme
         isUseSystemColor(binding.systemColor.isChecked)
         binding.settingUseSystemTheme.setOnClickListener {
-            ThemeEngine.getInstance(requireContext()).isDynamicTheme = !binding.alwaysDark.isChecked
-            binding.alwaysDark.isChecked = !binding.alwaysDark.isChecked
+            ThemeEngine.getInstance(requireContext()).isDynamicTheme = !binding.systemColor.isChecked
+            binding.systemColor.isChecked = !binding.systemColor.isChecked
         }
         binding.systemColor.setOnCheckedChangeListener { _, isChecked ->
             isUseSystemColor(isChecked)
