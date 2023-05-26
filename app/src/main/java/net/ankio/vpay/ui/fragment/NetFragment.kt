@@ -42,36 +42,18 @@ class NetFragment:Fragment() {
 
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val cookies = cookieManager.getCookie(request?.url.toString())
-                // 将cookies保存到本地，例如使用SharedPreferences
-                saveCookies(cookies)
                 view?.loadUrl(request?.url.toString())
                 return true
             }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 Logger.d("WebView", "Error: ${error?.errorCode} ${error?.description}",requireActivity())
             }
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                // 在页面加载完成后，恢复保存的Cookie
-                val cookies = loadCookies()
-                cookieManager.setCookie(url, cookies)
-            }
         }
         web.loadUrl("$host/admin")
         return binding.root
     }
     // 保存Cookie到本地
-    private fun saveCookies(cookies: String?) {
-        val sharedPreferences = requireActivity().getSharedPreferences("Cookies", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString("saved_cookies", cookies).apply()
-    }
 
-    // 从本地加载Cookie
-    private fun loadCookies(): String? {
-        val sharedPreferences = requireActivity().getSharedPreferences("Cookies", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("saved_cookies", null)
-    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().findViewById<ScrollView>(R.id.scrollView)?.let { scrollView ->
