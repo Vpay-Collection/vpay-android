@@ -46,7 +46,7 @@ class NetFragment:Fragment() {
                 return true
             }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-                Logger.d("WebView", "Error: ${error?.errorCode} ${error?.description}",requireActivity())
+//                Logger.d("WebView", "Error: ${error?.errorCode} ${error?.description}",requireActivity())
             }
         }
         web.loadUrl("$host/admin")
