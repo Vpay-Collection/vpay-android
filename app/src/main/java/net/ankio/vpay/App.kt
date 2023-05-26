@@ -30,6 +30,7 @@ open class App : Application() {
                 .withLogEnabled(true)
                 .build(this, "N6BV5FC9PSGZ29FNDD36")
         }
+        SpUtils.putBoolean("noticeServer",false)
 
     }
 

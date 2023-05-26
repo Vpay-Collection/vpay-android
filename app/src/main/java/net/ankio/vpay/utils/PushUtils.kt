@@ -3,6 +3,7 @@ package net.ankio.vpay.utils
 import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -21,10 +22,12 @@ object PushUtils {
     private val TAG = "PushUtils"
     private var host: String? = null
     private var key: String? = null
+
     init {
         host = SpUtils.getString("host")
         key = SpUtils.getString("key")
     }
+
     fun appPush(type: Int, price: Double, context: Context) {
         if (price < 0) {
             Logger.d(TAG, "金额小于0，不推送！", context)
@@ -37,7 +40,7 @@ object PushUtils {
 
 
         val jsonObject = JSONObject()
-        jsonObject.put("t", java.lang.String.valueOf(Date().time/1000))
+        jsonObject.put("t", java.lang.String.valueOf(Date().time / 1000))
         jsonObject.put("type", java.lang.String.valueOf(type))
         jsonObject.put("price", java.lang.String.valueOf(price))
         jsonObject.put("sign", md5(jsonObject.toString() + key))
@@ -55,11 +58,15 @@ object PushUtils {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
-                    if(api.code==200){
-                        Logger.d(TAG, "推送成功: ${response.body?.string()}", context)
-                    }else{
-                        Logger.d(TAG, "推送失败: ${api.msg}", context)
+                    try {
+                        val api = Gson().fromJson(response.body?.string(), AnkioApi::class.java)
+                        if (api.code == 200) {
+                            Logger.d(TAG, "推送成功: ${response.body?.string()}", context)
+                        } else {
+                            Logger.d(TAG, "推送失败: ${api.msg}", context)
+                        }
+                    } catch (e: JsonSyntaxException) {
+                        Logger.d(TAG, "网站响应异常:" + e.message, context)
                     }
 
                 }
@@ -103,7 +110,8 @@ object PushUtils {
         }
         return ""
     }
-      fun jsonObjectToUrlParams(jsonObject: JSONObject): String {
+
+    fun jsonObjectToUrlParams(jsonObject: JSONObject): String {
         val params = StringBuilder()
         val keys = jsonObject.keys()
 

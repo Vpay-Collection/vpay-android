@@ -2,10 +2,8 @@ package net.ankio.vpay.service
 
 import android.annotation.SuppressLint
 import android.app.Notification
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Looper
 import android.os.PowerManager
@@ -17,14 +15,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import net.ankio.vpay.BuildConfig
 import net.ankio.vpay.utils.AnkioApi
 import net.ankio.vpay.utils.Logger
-import net.ankio.vpay.utils.NAME
 import net.ankio.vpay.utils.PayUtils
 import net.ankio.vpay.utils.PushUtils
 import net.ankio.vpay.utils.SpUtils
-import net.ankio.vpay.utils.context
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -37,6 +34,9 @@ class NotificationService : NotificationListenerService()  {
     private var key: String? = null
     private var newThread: Thread? = null
     private var mWakeLock: WakeLock? = null
+    override fun onCreate() {
+        super.onCreate()
+    }
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
 
@@ -76,11 +76,11 @@ class NotificationService : NotificationListenerService()  {
     //心跳进程
     private fun initAppHeart() {
 
-        if (newThread != null) {
+        if (newThread != null ||  SpUtils.getBoolean("noticeServer")) {
             return
         }
         acquireWakeLock(this)
-
+        SpUtils.putBoolean("noticeServer",true)
         newThread = Thread {
             Logger.d(TAG, "心跳线程启动！", this)
             try {
@@ -123,21 +123,27 @@ class NotificationService : NotificationListenerService()  {
                                 }
 
                                 override fun onResponse(call: Call, response: Response) {
-                                    val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
-                                    if(api.code == 200){
-                                        SpUtils.putInt("heart",1)
-                                        SpUtils.putLong("time_heart",System.currentTimeMillis())
-                                        Logger.d(TAG, "心跳成功: ${api.msg}", that)
-                                    }else{
+                                    try {
+                                        val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
+                                        if(api.code == 200){
+                                            SpUtils.putInt("heart",1)
+                                            SpUtils.putLong("time_heart",System.currentTimeMillis())
+                                            Logger.d(TAG, "心跳成功: ${api.msg}", that)
+                                        }else{
+                                            SpUtils.putInt("heart",0)
+                                            SpUtils.putString("reason",api.msg)
+                                            Logger.d(TAG, "心跳异常: ${api.msg}", that)
+                                        }
+                                    }catch (e : JsonSyntaxException){
                                         SpUtils.putInt("heart",0)
-                                        SpUtils.putString("reason",api.msg)
-                                        Logger.d(TAG, "心跳异常: ${api.msg}", that)
+                                        e.message?.let { SpUtils.putString("reason", it) }
+                                        Logger.d(TAG, "心跳错误: ${e.message}", that)
                                     }
+
 
                                 }
                             })
                         } catch (e: IllegalArgumentException) {
-                            Thread.currentThread().interrupt()
                             SpUtils.putInt("heart",0)
                             e.message?.let { SpUtils.putString("reason", it) }
                             Logger.d(TAG, "配置错误: ${e.message}", that)
@@ -151,6 +157,7 @@ class NotificationService : NotificationListenerService()  {
     }
 
     private fun shutdownHeart() {
+        SpUtils.putBoolean("noticeServer",false)
         if (newThread == null) {
             return
         }
