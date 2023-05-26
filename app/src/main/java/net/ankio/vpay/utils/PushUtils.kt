@@ -2,6 +2,7 @@ package net.ankio.vpay.utils
 
 import android.content.Context
 import android.text.TextUtils
+import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -54,7 +55,13 @@ object PushUtils {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    Logger.d(TAG, "推送成功: ${response.body?.string()}", context)
+                    val api = Gson().fromJson(response.body?.string(),AnkioApi::class.java)
+                    if(api.code==200){
+                        Logger.d(TAG, "推送成功: ${response.body?.string()}", context)
+                    }else{
+                        Logger.d(TAG, "推送失败: ${api.msg}", context)
+                    }
+
                 }
             })
         } catch (e: IllegalArgumentException) {
