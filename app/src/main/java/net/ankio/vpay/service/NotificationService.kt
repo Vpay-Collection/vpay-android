@@ -197,7 +197,7 @@ class NotificationService : NotificationListenerService()  {
                         var money = PushUtils.extractAmount(content)
                         if (money < 0) money = PushUtils.extractAmount(title)
                         Logger.d(TAG, "匹配成功： 支付宝 到账 $money", this)
-                        PushUtils.appPush(1, money,this)
+                        PushUtils.appPush(2, money,this)
                         PayUtils.add(PushUtils.convertTimestampToDateTime(System.currentTimeMillis()),1,money)
                     }
                 }
@@ -207,7 +207,7 @@ class NotificationService : NotificationListenerService()  {
                         var money = PushUtils.extractAmount(content)
                         if (money < 0) money = PushUtils.extractAmount(title)
                         Logger.d(TAG, "匹配成功： 微信到账 $money", this)
-                        PushUtils.appPush(2, money,this)
+                        PushUtils.appPush(1, money,this)
                         PayUtils.add(PushUtils.convertTimestampToDateTime(System.currentTimeMillis()),2,money)
                     }
                 }
