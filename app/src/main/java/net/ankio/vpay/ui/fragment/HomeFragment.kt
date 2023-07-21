@@ -65,6 +65,7 @@ class HomeFragment : Fragment() {
                         SpUtils.putString("key", jsonObject.getString("key"))
                         Logger.d("Main", "配置成功", requireContext())
                         showMsg("配置成功，尝试心跳中...")
+                        App.stopHeartbeat()
                         App.startHeartbeat()
                         refreshStatus()
 
