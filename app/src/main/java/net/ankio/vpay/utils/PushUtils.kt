@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import net.ankio.vpay.App
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -19,7 +20,7 @@ import java.util.Date
 import java.util.Locale
 
 object PushUtils {
-    private val TAG = "PushUtils"
+    private const val TAG = "PushUtils"
     private var host: String? = null
     private var key: String? = null
 
@@ -37,7 +38,8 @@ object PushUtils {
         if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) return
 
         Logger.d(TAG, "推送数据: 类型： $type 金额：$price", context)
-
+        PayUtils.add(convertTimestampToDateTime(System.currentTimeMillis()),
+            App.PAY_ALIPAY,price)
 
         val jsonObject = JSONObject()
         jsonObject.put("t", java.lang.String.valueOf(Date().time / 1000))

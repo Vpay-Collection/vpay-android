@@ -2,25 +2,20 @@ package net.ankio.vpay.ui.fragment
 
 
 import android.app.Activity
-import android.app.ActivityManager
-import android.app.NotificationManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
@@ -32,17 +27,14 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.ankio.vpay.App
 import net.ankio.vpay.R
 import net.ankio.vpay.databinding.FragmentHomeBinding
-import net.ankio.vpay.service.NotificationService
 import net.ankio.vpay.utils.Logger
 import net.ankio.vpay.utils.PushUtils
 import net.ankio.vpay.utils.SpUtils
 import org.json.JSONException
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 
 class HomeFragment : Fragment() {
@@ -65,18 +57,16 @@ class HomeFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) {
                     // There are no request codes
                     val data: Intent? = result.data
-                    val result = CameraScan.parseScanResult(data)
+                    val result = CameraScan.parseScanResult(data)?:""
                     try {
                         Logger.d("Main", "二维码数据：$result", requireContext())
                         val jsonObject = JSONObject(result)
                         SpUtils.putString("host", jsonObject.getString("url"))
                         SpUtils.putString("key", jsonObject.getString("key"))
-                        Logger.d("Main", "配置成功，重启监听服务...", requireContext())
+                        Logger.d("Main", "配置成功", requireContext())
                         showMsg("配置成功，尝试心跳中...")
-                        GlobalScope.launch {
-                            delay(2000) // 延时一秒钟
-                            refreshStatus()
-                        }
+                        App.startHeartbeat()
+                        refreshStatus()
 
                     } catch (e: JSONException) {
                         Logger.d(
@@ -135,42 +125,18 @@ class HomeFragment : Fragment() {
         binding.imageView2.setColorFilter(getThemeAttrColor(textColor))
         binding.msgLabel2.setTextColor(getThemeAttrColor(textColor))
     }
-    private fun isMyNotificationListenerServiceRunning(context: Context): Boolean {
-        val enabledListeners = Settings.Secure.getString(
-            context.contentResolver,
-            "enabled_notification_listeners"
-        )
-        return enabledListeners?.contains(context.packageName) == true
-    }
+
 
 
     private fun refreshStatus(){
         val time = SpUtils.getLong("time_heart",0)
         val reason = SpUtils.getString("reason","尚未配置数据")
-        if(!isMyNotificationListenerServiceRunning(requireContext())) restartNotification()
-        if(SpUtils.getInt("heart",0)==0 || !isMyNotificationListenerServiceRunning(requireContext()) ){
+        if(SpUtils.getInt("heart",0)==0 || !App.isNotificationAccessibilityServiceEnabled(requireContext()) ){
             setActive2(getString(R.string.heart_not_work,reason,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
         }else{
             setActive2(getString(R.string.heart_work,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
         }
     }
-    private fun restartNotification() {
-        val pm = requireActivity().packageManager
-        //先禁用
-        pm.setComponentEnabledSetting(
-            ComponentName(requireActivity(), NotificationService::class.java),
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP
-        )
-        //再启用，重新触发rebind
-        pm.setComponentEnabledSetting(
-            ComponentName(
-                requireActivity(),
-                NotificationService::class.java
-            ),
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP
-        )
-    }
-
 
 
 

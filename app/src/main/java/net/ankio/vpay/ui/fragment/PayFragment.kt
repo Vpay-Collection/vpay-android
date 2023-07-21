@@ -1,6 +1,5 @@
 package net.ankio.vpay.ui.fragment
 
-import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import net.ankio.vpay.databinding.FragmentPayBinding
 import net.ankio.vpay.ui.MyAdapter
 import net.ankio.vpay.utils.PayUtils
-import java.util.Collections
 
 
 class PayFragment: Fragment()  {
@@ -30,9 +28,4 @@ class PayFragment: Fragment()  {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-
-
-    }
 }
