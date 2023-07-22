@@ -1,14 +1,17 @@
 package net.ankio.vpay
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import com.flurry.android.FlurryAgent
 import com.quickersilver.themeengine.ThemeEngine
 import net.ankio.vpay.service.HeartbeatManager
+import net.ankio.vpay.service.NotificationAccessibilityService
 import net.ankio.vpay.utils.SpUtils
 import java.util.*
 
@@ -21,19 +24,21 @@ open class App : Application() {
         lateinit var context: Context
         const val PAY_WECHAT = 1 // 微信收款
         const val PAY_ALIPAY = 2 // 支付宝收款
+
         fun isNotificationAccessibilityServiceEnabled(context: Context): Boolean {
-            val packageName = context.packageName
-            val expectedServiceName = "$packageName/.NotificationAccessibilityService"
-            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-
-            val enabledServices = Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-            )
-
-            return enabledServices?.contains(expectedServiceName) == true
+            var isAccessibilityEnabled = false
+            (context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).apply {
+                installedAccessibilityServiceList.forEach { installedService ->
+                    installedService.resolveInfo.serviceInfo.apply {
+                        if (getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any {
+                            it.resolveInfo.serviceInfo.packageName == packageName &&
+                                    it.resolveInfo.serviceInfo.name == name  })
+                            isAccessibilityEnabled = true
+                    }
+                }
+            }
+            return isAccessibilityEnabled
         }
-
         fun openAccessibilitySettings(context: Context) {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             context.startActivity(intent)

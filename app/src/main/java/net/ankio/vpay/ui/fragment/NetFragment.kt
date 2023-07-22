@@ -29,6 +29,7 @@ class NetFragment:Fragment() {
         val web = binding.webview
         val webSettings = web.settings
         webSettings.javaScriptEnabled = true
+        webSettings.domStorageEnabled = true
         val host = SpUtils.getString("host","https://pay.ankio.net")
 
 
