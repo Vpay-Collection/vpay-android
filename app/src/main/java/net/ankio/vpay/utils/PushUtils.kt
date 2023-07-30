@@ -30,7 +30,7 @@ object PushUtils {
     }
 
     fun appPush(type: Int, price: Double, context: Context) {
-        if (price < 0) {
+        if (price <= 0) {
             Logger.d(TAG, "金额小于0，不推送！", context)
             return
         }
@@ -80,10 +80,10 @@ object PushUtils {
     }
 
     fun extractAmount(input: String): Double {
-        val regex = Regex("[0-9]+(,[0-9]{3})*(\\.[0-9]{2})?")
-        val matchResult = regex.find(input)
+        val regex = Regex("(\\d+(\\.\\d+)?)")
+        val matchResult = regex.find(input.replace(",", ""))
         if (matchResult != null) {
-            val amountString = matchResult.value.replace(",", "")
+            val amountString = matchResult.value
             return amountString.toDouble()
         }
         return 0.0

@@ -46,7 +46,7 @@ class NotificationAccessibilityService : AccessibilityService() {
                             || title.contains("你已成功收款")
                         ) {
                             var money = PushUtils.extractAmount(content)
-                            if (money < 0) money = PushUtils.extractAmount(title)
+                            if (money <= 0) money = PushUtils.extractAmount(title)
                             Logger.d(TAG, "匹配成功： 支付宝到账 $money", this)
                             PushUtils.appPush(App.PAY_ALIPAY, money,this)
 
@@ -56,7 +56,7 @@ class NotificationAccessibilityService : AccessibilityService() {
                         if (title == "微信支付" || title == "微信收款助手" || title == "微信收款商业版") {
                             if(content.contains("已支付"))return
                             var money = PushUtils.extractAmount(content)
-                            if (money < 0) money = PushUtils.extractAmount(title)
+                            if (money <= 0) money = PushUtils.extractAmount(title)
                             Logger.d(TAG, "匹配成功： 微信到账 $money", this)
                             PushUtils.appPush(App.PAY_WECHAT, money,this)
 

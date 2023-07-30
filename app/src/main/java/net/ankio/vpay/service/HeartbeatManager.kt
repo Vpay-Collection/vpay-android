@@ -54,7 +54,7 @@ class HeartbeatManager(private val context: Context) {
                             .url(url)
                             .method("GET", null)
                             .build()
-                    Logger.d(TAG, "心跳地址：${url}", context)
+                  //  Logger.d(TAG, "心跳地址：${url}", context)
 
                     okHttpClient.newCall(request).enqueue(object : Callback {
                         override fun onFailure(call: Call, e: IOException) {
@@ -69,7 +69,7 @@ class HeartbeatManager(private val context: Context) {
                                 if(api.code == 200){
                                     SpUtils.putInt("heart",1)
                                     SpUtils.putLong("time_heart",System.currentTimeMillis())
-                                    Logger.d(TAG, "心跳成功: ${api.msg}", context)
+                               //     Logger.d(TAG, "心跳成功: ${api.msg}", context)
                                 }else{
                                     SpUtils.putInt("heart",0)
                                     SpUtils.putString("reason",api.msg)
