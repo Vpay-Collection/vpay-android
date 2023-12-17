@@ -42,4 +42,6 @@
     <string name="heart_not_work">心跳异常：%s\n%s</string>
     <string name="heart_work">心跳正常\n%s</string>
     <string name="accessibility_service_description">Vpay使用辅助功能实现通知监听，请开启辅助功能。</string>
+    <string name="notification">通知监听服务</string>
+    <string name="tips">请在无障碍列表中选择【Vpay】并打开。</string>
 </resources>

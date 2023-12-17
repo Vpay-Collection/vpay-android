@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace 'net.ankio.vpay'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "net.ankio.vpay"
         minSdk 24
-        targetSdk 33
-        versionCode 4
-        versionName "1.0.4"
+        targetSdk 34
+        versionCode 5
+        versionName "1.0.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -73,4 +73,7 @@ dependencies {
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'
     // AndroidX 版本
     implementation 'com.github.jenly1314:zxing-lite:2.3.1'
+    // worker
+    implementation "androidx.work:work-runtime-ktx:2.9.0" // 确保使用最新版本
+
 }

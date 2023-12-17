@@ -6,14 +6,11 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import com.flurry.android.FlurryAgent
 import com.quickersilver.themeengine.ThemeEngine
 import net.ankio.vpay.service.HeartbeatManager
-import net.ankio.vpay.service.NotificationAccessibilityService
 import net.ankio.vpay.utils.SpUtils
-import java.util.*
 
 
 open class App : Application() {
@@ -22,8 +19,8 @@ open class App : Application() {
 
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
-        const val PAY_WECHAT = 1 // 微信收款
-        const val PAY_ALIPAY = 2 // 支付宝收款
+        const val PAY_WECHAT = 3 // 微信收款
+        const val PAY_ALIPAY = 4 // 支付宝收款
 
         fun isNotificationAccessibilityServiceEnabled(context: Context): Boolean {
             var isAccessibilityEnabled = false

@@ -4,6 +4,7 @@ package net.ankio.vpay.ui
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -92,6 +93,7 @@ class MainActivity : BaseActivity() {
         }
         onViewCreated()
         if (!App.isNotificationAccessibilityServiceEnabled(this)) {
+            Toast.makeText(this,R.string.tips,Toast.LENGTH_LONG).show()
             App.openAccessibilitySettings(this)
         }
     }
