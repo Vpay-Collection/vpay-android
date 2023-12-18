@@ -50,7 +50,7 @@ class NetFragment:Fragment() {
 //                Logger.d("WebView", "Error: ${error?.errorCode} ${error?.description}",requireActivity())
             }
         }
-        web.loadUrl("$host/@admin")
+        web.loadUrl("$host/@admin/console/index")
         return binding.root
     }
     // 保存Cookie到本地
