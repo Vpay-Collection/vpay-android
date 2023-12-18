@@ -35,7 +35,10 @@ object PushUtils {
             return
         }
 
-        if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) return
+        if (TextUtils.isEmpty(host) || TextUtils.isEmpty(key)) {
+            Logger.d(TAG, "缺少key和host，不推送！", context)
+            return
+        }
 
         Logger.d(TAG, "推送数据: 类型： $type 金额：$price", context)
         PayUtils.add(convertTimestampToDateTime(System.currentTimeMillis()),

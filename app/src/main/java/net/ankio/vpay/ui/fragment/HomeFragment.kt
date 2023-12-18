@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +43,9 @@ import org.json.JSONObject
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,7 +55,6 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         resultLauncher =
@@ -57,17 +62,17 @@ class HomeFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) {
                     // There are no request codes
                     val data: Intent? = result.data
-                    val result = CameraScan.parseScanResult(data)?:""
+                    val result = CameraScan.parseScanResult(data) ?: ""
                     try {
                         Logger.d("Main", "二维码数据：$result", requireContext())
                         val jsonObject = JSONObject(result)
-                        SpUtils.putString("host", jsonObject.getString("url"))
+                        SpUtils.putString("host", jsonObject.getString("host"))
                         SpUtils.putString("key", jsonObject.getString("key"))
                         Logger.d("Main", "配置成功", requireContext())
                         showMsg("配置成功，尝试心跳中...")
                         App.stopHeartbeat()
                         App.startHeartbeat()
-                        refreshStatus()
+
 
                     } catch (e: JSONException) {
                         Logger.d(
@@ -81,16 +86,33 @@ class HomeFragment : Fragment() {
             }
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.scan.setOnClickListener {
             startScan(CaptureActivity::class.java, "请扫描后台二维码绑定")
 
         }
-        binding.url.setText(SpUtils.getString("host"))
-        binding.key.setText(SpUtils.getString("key"))
+        runCatching {
+
+            handler = Handler(Looper.getMainLooper())
+            runnable = object : Runnable {
+                override fun run() {
+                    if(context===null)return
+                    // 在这里更新你的UI
+                    refreshStatus()
+                    // 重新安排Runnable每2秒执行一次
+                    handler.postDelayed(this, 2000)
+                }
+            }
+
+            // 首次启动Runnable
+            handler.postDelayed(runnable, 0)
+        }.onFailure {
+            Log.d("Handler", it.toString());
+        }
         //restartNotification()
-        refreshStatus()
+
     }
 
     val KEY_TITLE = "key_title"
@@ -107,14 +129,25 @@ class HomeFragment : Fragment() {
         intent.putExtra(KEY_IS_CONTINUOUS, false)
         resultLauncher.launch(intent);
     }
+
     /**
      * 获取主题色
      */
-    private fun getThemeAttrColor( @AttrRes attrResId: Int): Int {
-        return MaterialColors.getColor(ContextThemeWrapper(requireContext(), ThemeEngine.getInstance(requireContext()).getTheme()), attrResId, Color.WHITE)
+    private fun getThemeAttrColor(@AttrRes attrResId: Int): Int {
+        return MaterialColors.getColor(
+            ContextThemeWrapper(
+                requireContext(),
+                ThemeEngine.getInstance(requireContext()).getTheme()
+            ), attrResId, Color.WHITE
+        )
     }
 
-    private fun setActive2(text: String, @AttrRes backgroundColor:Int, @AttrRes textColor:Int, @DrawableRes drawable:Int){
+    private fun setActive2(
+        text: String,
+        @AttrRes backgroundColor: Int,
+        @AttrRes textColor: Int,
+        @DrawableRes drawable: Int
+    ) {
         binding.active2.setBackgroundColor(getThemeAttrColor(backgroundColor))
         binding.imageView2.setImageDrawable(
             AppCompatResources.getDrawable(
@@ -128,23 +161,37 @@ class HomeFragment : Fragment() {
     }
 
 
-
-    private fun refreshStatus(){
-        val time = SpUtils.getLong("time_heart",0)
-        val reason = SpUtils.getString("reason","尚未配置数据")
-        if(SpUtils.getInt("heart",0)==0 || !App.isNotificationAccessibilityServiceEnabled(requireContext()) ){
-            setActive2(getString(R.string.heart_not_work,reason,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorErrorContainer,com.google.android.material.R.attr.colorOnErrorContainer, R.drawable.ic_error)
-        }else{
-            setActive2(getString(R.string.heart_work,PushUtils.convertTimestampToDateTime(time)),com.google.android.material.R.attr.colorPrimary,com.google.android.material.R.attr.colorOnPrimary,R.drawable.ic_success)
+    private fun refreshStatus() {
+        binding.url.setText(SpUtils.getString("host"))
+        binding.key.setText(SpUtils.getString("key"))
+        val time = SpUtils.getLong("time_heart", 0)
+        val reason = SpUtils.getString("reason", "尚未配置数据")
+        if (SpUtils.getInt("heart", 0) == 0) {
+            setActive2(
+                getString(
+                    R.string.heart_not_work,
+                    reason,
+                    PushUtils.convertTimestampToDateTime(time)
+                ),
+                com.google.android.material.R.attr.colorErrorContainer,
+                com.google.android.material.R.attr.colorOnErrorContainer,
+                R.drawable.ic_error
+            )
+        } else {
+            setActive2(
+                getString(R.string.heart_work, PushUtils.convertTimestampToDateTime(time)),
+                com.google.android.material.R.attr.colorPrimary,
+                com.google.android.material.R.attr.colorOnPrimary,
+                R.drawable.ic_success
+            )
         }
     }
-
 
 
     /**
      * 显示信息
      */
-    private fun showMsg(msg:String) {
+    private fun showMsg(msg: String) {
         Toast.makeText(requireActivity(), msg, Toast.LENGTH_LONG).show()
     }
 }

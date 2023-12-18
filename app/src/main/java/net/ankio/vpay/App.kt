@@ -1,15 +1,16 @@
 package net.ankio.vpay
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
+import android.text.TextUtils.SimpleStringSplitter
+import android.widget.Toast
 import com.flurry.android.FlurryAgent
 import com.quickersilver.themeengine.ThemeEngine
 import net.ankio.vpay.service.HeartbeatManager
+import net.ankio.vpay.service.NotificationAccessibilityService
 import net.ankio.vpay.utils.SpUtils
 
 
@@ -21,23 +22,26 @@ open class App : Application() {
         lateinit var context: Context
         const val PAY_WECHAT = 3 // 微信收款
         const val PAY_ALIPAY = 4 // 支付宝收款
-
-        fun isNotificationAccessibilityServiceEnabled(context: Context): Boolean {
-            var isAccessibilityEnabled = false
-            (context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).apply {
-                installedAccessibilityServiceList.forEach { installedService ->
-                    installedService.resolveInfo.serviceInfo.apply {
-                        if (getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any {
-                            it.resolveInfo.serviceInfo.packageName == packageName &&
-                                    it.resolveInfo.serviceInfo.name == name  })
-                            isAccessibilityEnabled = true
+         fun isAccessibilitySettingsOn(context: Context): Boolean {
+            val mStringColonSplitter = SimpleStringSplitter(':')
+            val settingValue = Settings.Secure.getString(
+                context.applicationContext.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            )
+            if (settingValue != null) {
+                mStringColonSplitter.setString(settingValue)
+                while (mStringColonSplitter.hasNext()) {
+                    val accessibilityService = mStringColonSplitter.next()
+                    if (accessibilityService.equals(NotificationAccessibilityService.Companion::class.java)) {
+                        return true
                     }
                 }
             }
-            return isAccessibilityEnabled
+            return false
         }
         fun openAccessibilitySettings(context: Context) {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         }
         @SuppressLint("StaticFieldLeak")
@@ -68,6 +72,11 @@ open class App : Application() {
         SpUtils.putBoolean("noticeServer",false)
         heartbeatManager = HeartbeatManager(applicationContext)
         startHeartbeat()
+
+        if (!isAccessibilitySettingsOn(this)) {
+            Toast.makeText(this,R.string.tips, Toast.LENGTH_LONG).show()
+            openAccessibilitySettings(this)
+        }
     }
 
     override fun onTerminate() {

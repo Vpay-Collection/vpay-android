@@ -92,10 +92,7 @@ class MainActivity : BaseActivity() {
 
         }
         onViewCreated()
-        if (!App.isNotificationAccessibilityServiceEnabled(this)) {
-            Toast.makeText(this,R.string.tips,Toast.LENGTH_LONG).show()
-            App.openAccessibilitySettings(this)
-        }
+
     }
 
     private fun getNavController(): NavController {
