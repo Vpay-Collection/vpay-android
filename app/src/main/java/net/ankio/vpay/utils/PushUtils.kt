@@ -64,9 +64,10 @@ object PushUtils {
 
                 override fun onResponse(call: Call, response: Response) {
                     try {
-                        val api = Gson().fromJson(response.body?.string(), AnkioApi::class.java)
+                        val res = response.body?.string()
+                        val api = Gson().fromJson(res, AnkioApi::class.java)
                         if (api.code == 200) {
-                            Logger.d(TAG, "推送成功: ${response.body?.string()}", context)
+                            Logger.d(TAG, "推送成功: $res", context)
                         } else {
                             Logger.d(TAG, "推送失败: ${api.msg}", context)
                         }
