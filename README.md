@@ -9,7 +9,7 @@
  <img src="https://img.shields.io/static/v1?label=licenes&message=GPL%20V3&color=important&style=for-the-badge"/>
  <img src="https://img.shields.io/static/v1?label=version&message=0.1beta&color=9cf&style=for-the-badge"/>
  <img src="https://img.shields.io/static/v1?label=language&message=Kotlin&color=777BB4&style=for-the-badge"/>
-  <img src="https://img.shields.io/static/v1?label=%E9%80%82%E9%85%8D%E6%9C%8D%E5%8A%A1%E7%AB%AF&message=%E6%9A%82%E6%97%A0&color=cb529b&style=for-the-badge"/>
+  <img src="https://img.shields.io/static/v1?label=%E9%80%82%E9%85%8D%E6%9C%8D%E5%8A%A1%E7%AB%AF&message=4.0&color=cb529b&style=for-the-badge"/>
 </p>
 
 ## 简介
@@ -27,7 +27,7 @@ Vpay安卓版是与[Vpay服务端](https://github.com/Vpay-Collection/VPay)配�
 
 ## 文档
 
-[阅读文档](https://vpay.ankio.net/page/2#/_page/app)
+[阅读文档](https://pay-doc.ankio.net/)
 
 ## Contribution
 
